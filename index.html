@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The 10 Million Dollar Video Grid</title>
+    <style>
+        /* Modernized Stylish Retro Framework */
+        body {
+            background-color: #0a0a0c;
+            color: #f1f2f6;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+        header {
+            background: linear-gradient(145deg, #111115, #1a1a24);
+            border-bottom: 3px solid #f3ba2f;
+            padding: 25px 0;
+            box-shadow: 0 4px 20px rgba(243, 186, 47, 0.15);
+        }
+        h1 {
+            font-size: 2.8rem;
+            margin: 0 0 8px 0;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+            background: linear-gradient(45deg, #f3ba2f, #ff7675);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 10px rgba(243, 186, 47, 0.2);
+        }
+        .tagline {
+            font-size: 1.1rem;
+            margin: 0 0 15px 0;
+            font-weight: 500;
+            color: #a4b0be;
+        }
+        
+        /* Premium Facebook Contact Button */
+        .contact-btn {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #1877f2, #0056b3);
+            color: #fff;
+            text-decoration: none;
+            padding: 10px 22px;
+            font-size: 0.95rem;
+            font-weight: bold;
+            border-radius: 50px;
+            border: 2px solid #fff;
+            box-shadow: 0 4px 15px rgba(24, 119, 242, 0.4);
+            transition: all 0.3s ease;
+        }
+        .contact-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(24, 119, 242, 0.6);
+            background: linear-gradient(135deg, #1e83ff, #0066d6);
+        }
+        
+        /* Colorful Stats Banner */
+        .stats-banner {
+            background-color: #15151e;
+            border: 2px solid #ff7675;
+            display: inline-block;
+            margin: 20px auto;
+            padding: 10px 25px;
+            font-weight: bold;
+            font-size: 1rem;
+            border-radius: 8px;
+            color: #fff;
+            box-shadow: 0 0 15px rgba(255, 118, 117, 0.2);
+        }
+        .stats-banner span {
+            color: #f3ba2f;
+        }
+
+        /* Optimized Canvas Layout without internal block text */
+        .grid-frame {
+            background-color: #111116;
+            border: 3px solid #2f3542;
+            max-width: 1200px;
+            margin: 10px auto 40px auto;
+            padding: 5px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: auto;
+            max-height: 70vh;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(100, 1fr);
+            gap: 2px;
+            background-color: #1e1e28;
+            min-width: 2200px;
+        }
+        .pixel-block {
+            width: 22px;
+            height: 22px;
+            background-color: #2f3542;
+            border: 1px solid #3f4656;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+            position: relative;
+        }
+        /* Completely clear boxes that reveal numbers only on Hover */
+        .pixel-block:hover::after {
+            content: attr(data-id);
+            position: absolute;
+            font-size: 8px;
+            color: #000;
+            background: #f3ba2f;
+            padding: 1px 3px;
+            border-radius: 2px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 5;
+        }
+        .pixel-block:hover {
+            background-color: #ffeaa7;
+            border-color: #f3ba2f;
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 0 10px #f3ba2f;
+        }
+        .pixel-block.sold {
+            border: 1px solid #ff4757;
+            cursor: pointer;
+        }
+        .pixel-block img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Styled Colorful Modal Popup Box */
+        .overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); z-index: 999;
+            backdrop-filter: blur(4px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #15151e;
+            padding: 30px;
+            border: 2px solid #f3ba2f;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 440px;
+            z-index: 1000;
+            box-shadow: 0px 0px 30px rgba(243, 186, 47, 0.3);
+            text-align: left;
+            color: #fff;
+        }
+        .modal h3 {
+            margin-top: 0;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #333;
+            padding-bottom: 8px;
+            color: #f3ba2f;
+        }
+        .crypto-box {
+            background: #1e1e28;
+            border: 1px dashed #555;
+            padding: 12px;
+            margin-bottom: 12px;
+            position: relative;
+            border-radius: 8px;
+        }
+        .crypto-box strong {
+            display: block;
+            font-size: 11px;
+            color: #ffa502;
+            margin-bottom: 2px;
+        }
+        .crypto-box span {
+            font-size: 13px;
+            word-break: break-all;
+            display: inline-block;
+            width: 78%;
+            font-weight: bold;
+            color: #fff;
+        }
+        .copy-btn {
+            background: #f3ba2f;
+            color: #000;
+            border: none;
+            padding: 5px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 4px;
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            transition: background 0.2s;
+        }
+        .copy-btn:hover { background: #ffc107; }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 12px;
+            border: 2px solid #333;
+            background: #1e1e28;
+            color: #fff;
+            border-radius: 8px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: #f3ba2f;
+            outline: none;
+        }
+        .btn-submit {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: #fff;
+            border: none;
+            padding: 14px;
+            width: 100%;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+            transition: all 0.2s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.5);
+        }
+        .btn-close {
+            background-color: #ff4757;
+            color: #fff;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            border-radius: 8px;
+        }
+        .btn-close:hover { background-color: #ff6b81; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>The 10 Million Dollar Video Grid</h1>
+        <p class="tagline">Inspired by Alex Tew's Million Dollar Homepage - Own a piece of internet history!</p>
+        
+        <!-- Live Facebook Contact Channel -->
+        <a href="https://www.facebook.com/share/1FGk5FMaEU/" target="_blank" class="contact-btn">
+            🌐 Contact Me on Facebook
+        </a>
+    </header>
+
+    <!-- Stylized Status Tracker -->
+    <div class="stats-banner">
+        Total Canvas Area: <span>10,000,000 Pixels</span> | 
+        Current Advertising Rate: <span>$10 USDT</span>
+    </div>
+
+    <p style="font-size: 13px; color: #a4b0be; margin: 0;">Hover over any block to check its ID. Use scrollbars to navigate the field.</p>
+
+    <!-- The Pixel Canvas Outer Frame -->
+    <div class="grid-frame">
+        <div class="grid-container" id="pixelCanvas"></div>
+    </div>
+
+    <!-- The Checkout Mechanism Overlay -->
+    <div class="overlay" id="overlay" onclick="closeModal()"></div>
+    <div class="modal" id="paymentModal">
+        <h3 id="modalTitle">Buy Advertising Space</h3>
+        <p style="font-size: 12px; margin-top: -5px; font-weight: bold; color: #a4b0be;">Send exactly 10 USDT to one of our merchant addresses:</p>
+        
+        <div class="payment-destinations">
+            <!-- Merchant Node 1: Binance UID -->
+            <div class="crypto-box">
+                <strong>MERCHANT BINANCE UID</strong>
+                <span id="bUid">768767805</span>
+                <button class="copy-btn" onclick="copyText('bUid')">COPY</button>
+            </div>
+            
+            <!-- Merchant Node 2: Binance TRC20 -->
+            <div class="crypto-box">
+                <strong>BINANCE USDT (TRC-20)</strong>
+                <span id="bAddr">TXjqh3e1BGgZV2YR9aA9v2YacTd9V67auW</span>
+                <button class="copy-btn" onclick="copyText('bAddr')">COPY</button>
+            </div>
+
+            <!-- Merchant Node 3: Bitget Wallet TRC20 -->
+            <div class="crypto-box">
+                <strong>BITGET WALLET USDT (TRC-20)</strong>
+                <span id="bitgetAddr">TPmoeZqG34294D8KK2TgzKTEdxm8m7UScn</span>
+                <button class="copy-btn" onclick="copyText('bitgetAddr')">COPY</button>
+            </div>
+        </div>
+
+        <form id="orderForm">
+            <input type="url" id="videoUrl" placeholder="Enter Your Destination URL (FB/YouTube)" required>
+            <input type="url" id="imageUrl" placeholder="Enter Your Banner/Image Artwork URL" required>
+            <input type="text" id="txId" placeholder="Enter Network Transaction Hash / TxID" required>
+            <button type="submit" class="btn-submit">VERIFY & PUBLISH LIVE</button>
+        </form>
+        <button class="btn-close" onclick="closeModal()">CANCEL</button>
+    </div>
+
+    <script>
+        const canvasBlocks = 10000; // Exact 10,000 blocks generated for 10 Million total pixels
+        const canvas = document.getElementById('pixelCanvas');
+        let ActiveBlockTarget = null;
+
+        // Local State Synchronization for instant client deployment simulation
+        let ClientDatabase = JSON.parse(localStorage.getItem('alexCloneDB_10m')) || {};
+
+        // Rendering the 10,000 Blocks Matrix without inner numbers
+        for (let i = 1; i <= canvasBlocks; i++) {
+            const block = document.createElement('div');
+            block.className = 'pixel-block';
+            block.id = `block-${i}`;
+            block.setAttribute('data-id', `#${i}`); // Stores number safely for Hover action
+            
+            if (ClientDatabase[i]) {
+                block.classList.add('sold');
+                block.innerHTML = `<a href="${ClientDatabase[i].videoUrl}" target="_blank"><img src="${ClientDatabase[i].imageUrl}" title="Space Block #${i} - Sponsored Content"></a>`;
+            } else {
+                block.onclick = () => openModal(i);
+            }
+            canvas.appendChild(block);
+        }
+
+        function openModal(id) {
+            ActiveBlockTarget = id;
+            document.getElementById('modalTitle').innerText = `Buy Space Block #${id}`;
+            document.getElementById('paymentModal').style.display = 'block';
+            document.getElementById('overlay').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('paymentModal').style.display = 'none';
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('orderForm').reset();
+        }
+
+        // Clip data transfer function
+        function copyText(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(text);
+            alert('Copied to Clipboard!');
+        }
+
+        // Form pipeline submission
+        document.getElementById('orderForm').onsubmit = function(e) {
+            e.preventDefault();
+            
+            const vUrl = document.getElementById('videoUrl').value;
+            const iUrl = document.getElementById('imageUrl').value;
+            const tx = document.getElementById('txId').value;
+
+            // Pipeline database execution
+            ClientDatabase[ActiveBlockTarget] = { videoUrl: vUrl, imageUrl: iUrl, txId: tx };
+            localStorage.setItem('alexCloneDB_10m', JSON.stringify(ClientDatabase));
+
+            alert('Transaction Data Captured! The block is now automatically rendered live on the grid framework.');
+            closeModal();
+            window.location.reload(); 
+        }
+    </script>
+</body>
+</html>
