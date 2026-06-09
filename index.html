@@ -3,597 +3,460 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>10 Million Dollar Pixel Grid</title>
+    <title>10 Million Dollar Pixel Grid | Ultra Fast & Fixes</title>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            background: #0a0a0c;
-            color: #f1f2f6;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            overflow-x: hidden;
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body { background: #0a0a0c; color: #f1f2f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; overflow-x: hidden; }
+        
+        .hero-section { background: linear-gradient(135deg, #0d0d12 0%, #1a1a2e 100%); border-bottom: 3px solid #f3ba2f; padding: 12px 20px 10px; }
+        .header-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; max-width: 1200px; margin: 0 auto; padding: 0 15px; }
+        .title-area { text-align: left; flex: 1; }
+        .main-title { font-size: 2.2rem; font-weight: 900; letter-spacing: -1px; background: linear-gradient(135deg, #f3ba2f, #ff7675); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+        .tagline { font-size: 0.7rem; color: #a4b0be; }
+        .tagline span { color: #f3ba2f; font-weight: bold; }
+        
+        .fb-contact-btn { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, #1877f2, #0d5bbd); color: white; text-decoration: none; padding: 5px 14px; font-size: 0.7rem; font-weight: bold; border-radius: 50px; border: 1px solid rgba(255,255,255,0.3); transition: transform 0.2s ease; }
+        .fb-contact-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4); }
+        
+        .stats-bar { background: #111116; border-bottom: 1px solid #2f3542; padding: 6px 20px; display: flex; justify-content: center; align-items: center; gap: 40px; flex-wrap: wrap; font-size: 0.8rem; }
+        .stat-item { display: flex; align-items: center; gap: 6px; }
+        .stat-label { color: #a4b0be; }
+        .stat-value { color: #f3ba2f; font-weight: bold; font-size: 0.9rem; }
+        
+        /* ZOOM CONTAINER & GPU ACCELERATION */
+        .zoom-container { 
+            width: 100%; 
+            max-width: 1400px; 
+            margin: 8px auto; 
+            background: #0f0f14; 
+            border-radius: 16px; 
+            border: 1px solid #2f3542; 
+            overflow: auto; 
+            height: 65vh; 
+            position: relative; 
+            cursor: crosshair; 
+            background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 0);
+            background-size: 20px 20px;
         }
         
-        /* ============= হেডার সেকশন ============= */
-        .hero-section {
-            background: linear-gradient(135deg, #0d0d12 0%, #1a1a2e 100%);
-            border-bottom: 3px solid #f3ba2f;
-            padding: 40px 20px 30px;
-            position: relative;
+        .grid-wrapper { 
+            transform-origin: 0 0; 
+            width: fit-content; 
+            min-width: 100%;
+            transform: translate3d(0,0,0) scale(1);
+            backface-visibility: hidden;
+            perspective: 1000;
+            will-change: transform; 
+            transition: transform 0.05s cubic-bezier(0.1, 0.8, 0.2, 1);
         }
         
-        /* টাইটেল ও বাটন এক লাইনে রাখার জন্য ফ্লেক্স */
-        .header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 15px;
-        }
+        .grid-viewport { display: grid; grid-template-columns: repeat(317, 10px); gap: 1px; background: #1e1e28; width: fit-content; }
         
-        .title-area {
-            text-align: left;
-            flex: 1;
-        }
+        .pixel { width: 10px; height: 10px; background: #2f3542; border: 0.3px solid #3a4050; cursor: crosshair; position: relative; }
+        .pixel.sold { cursor: not-allowed; border-color: #ff4757; opacity: 0.8; }
+        .pixel.selected { background: #f3ba2f !important; border: 1px solid white; box-shadow: 0 0 4px gold; z-index: 2; }
+        .pixel:hover:not(.sold):not(.selected) { background: #ffeaa7; z-index: 5; box-shadow: 0 0 4px gold; }
+        .pixel img { width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
         
-        .main-title {
-            font-size: 2.5rem;
-            font-weight: 900;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, #f3ba2f, #ff7675);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
+        .zoom-hint { font-size: 0.65rem; color: #f3ba2f; margin: 4px auto; text-align: center; }
+        .scroll-hint { font-size: 0.6rem; color: #57606f; margin: 4px auto; }
         
-        .tagline {
-            font-size: 0.85rem;
-            color: #a4b0be;
-        }
+        .buy-button-container { position: fixed; bottom: 20px; right: 20px; z-index: 100; }
+        .buy-float-btn { background: linear-gradient(135deg, #2ecc71, #27ae60); border: none; padding: 10px 22px; border-radius: 50px; color: white; font-weight: bold; font-size: 0.9rem; cursor: pointer; box-shadow: 0 4px 15px rgba(46,204,113,0.4); display: none; }
         
-        .tagline span {
-            color: #f3ba2f;
-            font-weight: bold;
-        }
+        /* SHARE SECTION FIXED CSS */
+        .share-section { background: linear-gradient(135deg, #111115, #1a1a24); margin: 15px auto; padding: 15px; border-radius: 16px; max-width: 500px; border: 1px solid #f3ba2f; box-shadow: 0 4px 15px rgba(243, 186, 47, 0.1); }
+        .share-title { font-size: 0.9rem; margin-bottom: 8px; color: #f3ba2f; font-weight: bold; }
+        .share-link-box { display: flex; gap: 8px; justify-content: center; margin-bottom: 10px; width: 100%; }
+        .share-link-input { flex: 1; padding: 8px 15px; background: #0a0a0c; border: 1px solid #2f3542; border-radius: 50px; color: #f3ba2f; font-size: 0.75rem; outline: none; text-align: center; font-weight: 500; }
+        .share-btn { background: #f3ba2f; border: none; padding: 8px 18px; border-radius: 50px; font-weight: bold; cursor: pointer; font-size: 0.75rem; color: black; transition: transform 0.2s ease; }
+        .share-btn:hover { transform: scale(1.03); background: #ffeaa7; }
         
-        /* ছোট ফেসবুক বাটন - ডান পাশে */
-        .fb-contact-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: linear-gradient(135deg, #1877f2, #0d5bbd);
-            color: white;
-            text-decoration: none;
-            padding: 6px 16px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            border-radius: 50px;
-            border: 1px solid rgba(255,255,255,0.3);
-            transition: all 0.3s ease;
-            white-space: nowrap;
-        }
+        .social-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 5px; }
+        .social-icon { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 16px; border-radius: 50px; text-decoration: none; font-weight: bold; font-size: 0.7rem; color: white; transition: transform 0.2s ease; min-width: 80px; }
+        .social-icon:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .fb-share { background: #1877f2; }
+        .wa-share { background: #25D366; }
+        .tw-share { background: #000000; border: 1px solid #2f3542; }
+        .commission-note { font-size: 0.65rem; color: #a4b0be; margin-top: 8px; font-style: italic; }
         
-        .fb-contact-btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(24, 119, 242, 0.4);
-        }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(3px); z-index: 1000; }
+        .modal-box { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #15151e; padding: 18px; border: 2px solid #f3ba2f; border-radius: 20px; width: 92%; max-width: 400px; z-index: 1001; color: white; }
+        .modal-box h3 { color: #f3ba2f; margin-bottom: 10px; font-size: 1.1rem; }
+        .selected-blocks-list { background: #1e1e28; padding: 6px; border-radius: 10px; margin: 8px 0; font-size: 10px; max-height: 70px; overflow-y: auto; }
+        .crypto-box { background: #1e1e28; padding: 6px; border-radius: 10px; margin: 6px 0; position: relative; font-size: 10px; text-align: left; }
+        .copy-btn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); background: #f3ba2f; border: none; padding: 2px 6px; border-radius: 15px; cursor: pointer; font-size: 9px; color: black; }
         
-        .fb-contact-btn::before {
-            content: '📘';
-            font-size: 0.85rem;
-        }
+        input, .price-input { width: 100%; padding: 6px; margin: 5px 0; background: #1e1e28; border: 1px solid #3a4050; color: white; border-radius: 10px; font-size: 12px; }
+        .price-note { font-size: 9px; color: #f3ba2f; margin-bottom: 6px; }
+        .btn-submit { background: #2ecc71; width: 100%; padding: 8px; border: none; border-radius: 30px; font-weight: bold; margin-top: 10px; cursor: pointer; color: black; }
+        .btn-submit:disabled { background: #7f8c8d; cursor: not-allowed; }
+        .btn-close { background: #ff4757; width: 100%; padding: 6px; border: none; border-radius: 30px; margin-top: 6px; cursor: pointer; color: white; }
+        .file-label { background: #1e1e28; padding: 6px; border-radius: 25px; display: block; margin: 6px 0; text-align: center; cursor: pointer; border: 1px dashed #f3ba2f; font-size: 11px; }
         
-        /* ============= স্ট্যাটস বার (এক লাইনে তিনটি) ============= */
-        .stats-bar {
-            background: #111116;
-            border-bottom: 1px solid #2f3542;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 40px;
-            flex-wrap: wrap;
-            font-size: 0.85rem;
-        }
+        footer { text-align: center; padding: 6px; font-size: 0.55rem; color: #57606f; border-top: 1px solid #2f3542; margin-top: 6px; }
         
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .stat-label {
-            color: #a4b0be;
-        }
-        
-        .stat-value {
-            color: #f3ba2f;
-            font-weight: bold;
-            font-size: 1rem;
-        }
-        
-        .stat-divider {
-            color: #2f3542;
-            font-size: 1.2rem;
-        }
-        
-        /* ============= গ্রিড কন্টেইনার ============= */
-        .virtual-scroll-container {
-            width: 100%;
-            max-width: 1300px;
-            margin: 20px auto;
-            background: #0f0f14;
-            border-radius: 20px;
-            border: 1px solid #2f3542;
-            overflow: auto;
-            height: 65vh;
-            position: relative;
-        }
-        
-        .scroll-hint {
-            font-size: 0.7rem;
-            color: #57606f;
-            margin: 8px auto;
-            text-align: center;
-        }
-        
-        .grid-spacer {
-            position: relative;
-            width: 100%;
-        }
-        
-        .grid-viewport {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: grid;
-            grid-template-columns: repeat(317, 10px);
-            gap: 1px;
-            background: #1e1e28;
-            will-change: transform;
-        }
-        
-        .pixel {
-            width: 10px;
-            height: 10px;
-            background: #2f3542;
-            border: 0.3px solid #3a4050;
-            cursor: pointer;
-            transition: 0.05s linear;
-            position: relative;
-        }
-        
-        .pixel.sold {
-            cursor: default;
-            border-color: #ff4757;
-        }
-        
-        .pixel:hover:not(.sold) {
-            background: #ffeaa7;
-            transform: scale(1.6);
-            z-index: 10;
-            box-shadow: 0 0 8px gold;
-        }
-        
-        .pixel img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            pointer-events: none;
-        }
-        
-        .pixel:hover::after {
-            content: attr(data-id);
-            position: absolute;
-            background: #f3ba2f;
-            color: black;
-            font-size: 7px;
-            font-weight: bold;
-            padding: 0px 3px;
-            border-radius: 4px;
-            top: -14px;
-            left: 50%;
-            transform: translateX(-50%);
-            white-space: nowrap;
-            z-index: 20;
-        }
-        
-        /* মডাল স্টাইল */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(5px);
-            z-index: 1000;
-        }
-        
-        .modal-box {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: #15151e;
-            padding: 25px;
-            border: 2px solid #f3ba2f;
-            border-radius: 24px;
-            width: 92%;
-            max-width: 440px;
-            z-index: 1001;
-            color: white;
-        }
-        
-        .modal-box h3 {
-            color: #f3ba2f;
-            margin-bottom: 15px;
-        }
-        
-        .crypto-box {
-            background: #1e1e28;
-            padding: 10px;
-            border-radius: 12px;
-            margin: 12px 0;
-            position: relative;
-            font-size: 12px;
-        }
-        
-        .copy-btn {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: #f3ba2f;
-            border: none;
-            padding: 4px 8px;
-            border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        
-        input, .price-input {
-            width: 100%;
-            padding: 10px;
-            margin: 8px 0;
-            background: #1e1e28;
-            border: 1px solid #3a4050;
-            color: white;
-            border-radius: 12px;
-        }
-        
-        .price-note {
-            font-size: 11px;
-            color: #f3ba2f;
-            margin-bottom: 12px;
-            background: #1e1e28;
-            padding: 6px;
-            border-radius: 8px;
-        }
-        
-        .btn-submit {
-            background: #2ecc71;
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 40px;
-            font-weight: bold;
-            margin-top: 15px;
-            cursor: pointer;
-        }
-        
-        .btn-close {
-            background: #ff4757;
-            width: 100%;
-            padding: 10px;
-            border: none;
-            border-radius: 40px;
-            margin-top: 10px;
-            cursor: pointer;
-        }
-        
-        .file-label {
-            background: #1e1e28;
-            padding: 10px;
-            border-radius: 30px;
-            display: block;
-            margin: 10px 0;
-            text-align: center;
-            cursor: pointer;
-            border: 1px dashed #f3ba2f;
-        }
-        
-        footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 0.7rem;
-            color: #57606f;
-            border-top: 1px solid #2f3542;
-            margin-top: 20px;
-        }
-        
-        @media (max-width: 700px) {
-            .grid-viewport { grid-template-columns: repeat(317, 8px); }
-            .pixel { width: 8px; height: 8px; }
-            .main-title { font-size: 1.5rem; }
-            .header-row { flex-direction: column; text-align: center; }
-            .title-area { text-align: center; }
-            .stats-bar { gap: 15px; font-size: 0.7rem; }
-            .stat-divider { display: none; }
-            .stats-bar { flex-direction: column; gap: 5px; }
-        }
+        @media (max-width: 700px) { .main-title { font-size: 1.4rem; } .header-row { flex-direction: column; text-align: center; } .title-area { text-align: center; } .stats-bar { gap: 15px; } .zoom-container { height: 55vh; } .share-link-box { flex-direction: column; } .share-btn { width: 100%; border-radius: 50px; } }
     </style>
 </head>
 <body>
 
-<!-- ============= হেডার সেকশন (বাটন ডান পাশে) ============= -->
 <div class="hero-section">
     <div class="header-row">
         <div class="title-area">
             <h1 class="main-title">The 10 Million Dollar Pixel Grid</h1>
-            <div class="tagline">
-                Inspired by <span>Alex Tew's Million Dollar Homepage</span> — Own a piece of internet history!
-            </div>
+            <div class="tagline">Inspired by <span>Alex Tew's Million Dollar Homepage</span> — Own a piece of internet history!</div>
         </div>
-        <a href="https://www.facebook.com/share/1FGk5FMaEU/" target="_blank" class="fb-contact-btn">
-            Contact Me on Facebook
-        </a>
+        <a href="https://www.facebook.com/share/1FGk5FMaEU/" target="_blank" class="fb-contact-btn">📘 Contact</a>
     </div>
 </div>
 
-<!-- ============= স্ট্যাটস বার (এক লাইনে তিনটি) ============= -->
 <div class="stats-bar">
-    <div class="stat-item">
-        <span class="stat-label">📦 Total Blocks:</span>
-        <span class="stat-value">100,000</span>
-    </div>
+    <div class="stat-item"><span class="stat-label">📦 Total Pixels:</span><span class="stat-value" id="totalPixels">100,000</span></div>
     <span class="stat-divider">|</span>
-    <div class="stat-item">
-        <span class="stat-label">💰 Price Range:</span>
-        <span class="stat-value">$10 - $1,000 USDT</span>
-    </div>
+    <div class="stat-item"><span class="stat-label">💰 Price Per Pixel:</span><span class="stat-value">$10 - $1,000</span></div>
     <span class="stat-divider">|</span>
-    <div class="stat-item">
-        <span class="stat-label">★ Sold Blocks:</span>
-        <span class="stat-value" id="soldCount">0</span>
-    </div>
+    <div class="stat-item"><span class="stat-label">★ Sold Pixels:</span><span class="stat-value" id="soldCount">0</span></div>
 </div>
 
-<!-- গ্রিড কন্টেইনার -->
-<div class="virtual-scroll-container" id="scrollContainer">
-    <div class="grid-spacer" id="gridSpacer" style="height: 3160px;"></div>
-    <div class="grid-viewport" id="gridViewport"></div>
+<div class="zoom-container" id="zoomContainer">
+    <div class="grid-wrapper" id="gridWrapper">
+        <div class="grid-viewport" id="gridViewport"></div>
+    </div>
 </div>
-<div class="scroll-hint">
-    ⬅️ ➡️ Scroll to navigate the grid | Hover over any block to see its ID
+<div class="zoom-hint">🔍 Pinch to zoom (mobile) | Ctrl + Mouse Wheel (computer)</div>
+<div class="scroll-hint">👆 Click & drag to select multiple pixels | Hover to see ID</div>
+
+<div class="buy-button-container">
+    <button class="buy-float-btn" id="buyFloatBtn" onclick="openModal()">💰 Buy Selected (<span id="floatSelectedCount">0</span>)</button>
 </div>
 
-<!-- মডাল -->
+<div class="share-section" id="shareSection">
+    <div class="share-title">💰 Share & Earn 10% Commission!</div>
+    <div class="share-link-box">
+        <input type="text" id="shareLink" class="share-link-input" readonly placeholder="Generating link...">
+        <button class="share-btn" onclick="copyShareLink()">📋 Copy Link</button>
+    </div>
+    <div class="social-buttons">
+        <a href="#" target="_blank" id="fbShareBtn" class="social-icon fb-share">📘 Facebook</a>
+        <a href="#" target="_blank" id="waShareBtn" class="social-icon wa-share">💬 WhatsApp</a>
+        <a href="#" target="_blank" id="twShareBtn" class="social-icon tw-share">𝕏 Twitter</a>
+    </div>
+    <div class="commission-note">⚡ Anyone who buys using your link gives you 10% commission!</div>
+</div>
+
+<footer>© 2026 10 Million Dollar Pixel Grid | Drag any area to select multiple pixels</footer>
+
 <div class="modal-overlay" id="modalOverlay"></div>
 <div class="modal-box" id="purchaseModal">
-    <h3 id="modalTitle">Buy Block #0</h3>
-    <p style="font-size:13px">Send USDT (TRC-20) to any wallet below:</p>
+    <h3 id="modalTitle">Buy Selected Pixels</h3>
+    <div class="selected-blocks-list" id="selectedBlocksList"></div>
+    <p style="font-size:11px; margin-bottom:5px;">Send USDT (TRC-20) to any wallet:</p>
     <div class="crypto-box">
-        🟡 Binance Wallet: <span id="binAddr">TXjqh3e1BGgZV2YR9aA9v2YacTd9V67auW</span>
+        🟡 Binance: <span id="binAddr">TXjqh3e1BGgZV2YR9aA9v2YacTd9V67auW</span>
         <button class="copy-btn" onclick="copyText('binAddr')">Copy</button>
     </div>
     <div class="crypto-box">
-        🟠 Bitget Wallet: <span id="bitAddr">TPmoeZqG34294D8KK2TgzKTEdxm8m7UScn</span>
+        🟠 Bitget: <span id="bitAddr">TPmoeZqG34294D8KK2TgzKTEdxm8m7UScn</span>
         <button class="copy-btn" onclick="copyText('bitAddr')">Copy</button>
     </div>
     
-    <label>💰 Enter Amount (USDT):</label>
-    <input type="number" id="priceInput" class="price-input" placeholder="10 to 1000 USDT" min="10" max="1000" step="1" value="10">
-    <div class="price-note">
-        ⚡ Minimum: $10 USDT | Maximum: $1000 USDT
-    </div>
+    <label style="font-size: 11px; display:block; margin-top:8px;">💰 Price per pixel (USDT):</label>
+    <input type="number" id="priceInput" placeholder="10 to 1000" min="10" max="1000" value="10">
+    <div class="price-note">⚡ Min $10 | Max $1000 | Total: $<span id="modalTotal">0</span></div>
     
-    <label class="file-label" id="fileLabel">📸 Click to select your logo/image</label>
+    <label class="file-label" id="fileLabel">📸 Click to select image</label>
     <input type="file" id="imageFile" accept="image/*" style="display:none">
-    <input type="text" id="txHash" placeholder="TRC-20 Transaction ID (TxID)" required>
+    <input type="text" id="txHash" placeholder="TRC-20 Transaction Hash" required>
     
-    <button class="btn-submit" id="submitPayment">✅ VERIFY & PUBLISH</button>
+    <button class="btn-submit" id="submitPayment">✅ SUBMIT FOR REVIEW</button>
     <button class="btn-close" onclick="closeModal()">Close</button>
 </div>
 
-<footer>
-    © 2025 10 Million Dollar Pixel Grid | Every pixel counts | Built with 💛
-</footer>
-
 <script>
-    // Firebase Configuration
-    const firebaseConfig = { databaseURL: "https://the-10-million-dollar-video-gd-default-rtdb.firebaseio.com" };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const IMGBB_KEY = "eb13b60de19727bd76d050d030fafde3";
-    
-    const TOTAL = 100000;
-    const COLS = 317;
-    const ROWS = Math.ceil(TOTAL / COLS);
-    let blockData = {};
-    let selectedBlockId = null;
-    let currentPrice = 10;
-    
-    const container = document.getElementById('scrollContainer');
-    const viewport = document.getElementById('gridViewport');
-    const spacer = document.getElementById('gridSpacer');
-    
-    spacer.style.height = `${ROWS * 11}px`;
-    
-    function updateSoldCount() {
-        if(blockData) {
-            const sold = Object.keys(blockData).filter(key => blockData[key] && blockData[key].imageUrl).length;
-            document.getElementById('soldCount').innerText = sold;
-        }
-    }
-    
-    function renderVisible() {
-        const scrollTop = container.scrollTop;
-        const viewportHeight = container.clientHeight;
-        const startRow = Math.floor(scrollTop / 11);
-        const endRow = Math.min(ROWS - 1, Math.ceil((scrollTop + viewportHeight) / 11));
+    (function() {
+        const firebaseConfig = { databaseURL: "https://the-10-million-dollar-video-gd-default-rtdb.firebaseio.com" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
         
-        const startIndex = startRow * COLS;
-        const endIndex = Math.min(TOTAL, (endRow + 1) * COLS);
+        const WEBSITE_URL = window.location.origin + window.location.pathname;
+        const TOTAL = 100000;
+        const COLS = 317;
         
-        let html = '';
-        for (let i = startIndex; i < endIndex; i++) {
-            const id = i + 1;
-            const data = blockData[id];
-            const isSold = data && data.imageUrl;
-            const imgHtml = isSold ? `<img src="${data.imageUrl}" loading="lazy">` : '';
-            html += `<div class="pixel ${isSold ? 'sold' : ''}" data-id="${id}" data-index="${i}" onclick="if(!this.classList.contains('sold')) openModal(${id})">${imgHtml}</div>`;
-        }
-        viewport.innerHTML = html;
+        let blockData = {};
+        let selectedBlocks = new Set();
+        let currentPrice = 10;
+        let mouseDown = false;
+        let selectionStartIndex = -1;
+        let isPinching = false; 
         
-        document.querySelectorAll('.pixel').forEach(el => {
-            const id = el.getAttribute('data-id');
-            if(id) el.setAttribute('data-id', `#${id}`);
-        });
+        const zoomContainer = document.getElementById('zoomContainer');
+        const gridWrapper = document.getElementById('gridWrapper');
+        const gridViewport = document.getElementById('gridViewport');
+        const soldCountSpan = document.getElementById('soldCount');
+        const floatSelectedCountSpan = document.getElementById('floatSelectedCount');
+        const buyFloatBtn = document.getElementById('buyFloatBtn');
+        const modalTotalSpan = document.getElementById('modalTotal');
+        const selectedBlocksListDiv = document.getElementById('selectedBlocksList');
+        const priceInput = document.getElementById('priceInput');
+        const modalTitle = document.getElementById('modalTitle');
+        const fileLabel = document.getElementById('fileLabel');
+        const imageFile = document.getElementById('imageFile');
+        const submitBtn = document.getElementById('submitPayment');
         
-        viewport.style.transform = `translateY(${startRow * 11}px)`;
-    }
-    
-    container.addEventListener('scroll', () => {
-        requestAnimationFrame(renderVisible);
-    });
-    
-    db.ref('blocks').on('value', (snap) => {
-        blockData = snap.val() || {};
-        renderVisible();
-        updateSoldCount();
-    });
-    
-    // প্রাইস ইনপুট
-    const priceInput = document.getElementById('priceInput');
-    priceInput.addEventListener('input', (e) => {
-        let val = parseFloat(e.target.value);
-        if(isNaN(val)) val = 10;
-        if(val < 10) val = 10;
-        if(val > 1000) val = 1000;
-        currentPrice = val;
-        priceInput.value = val;
-        document.getElementById('modalTitle').innerHTML = `Buy Block #${selectedBlockId || 0} ($${currentPrice} USDT)`;
-    });
-    
-    function openModal(id) {
-        selectedBlockId = id;
-        document.getElementById('modalTitle').innerHTML = `Buy Block #${id} ($${currentPrice} USDT)`;
-        document.getElementById('purchaseModal').style.display = 'block';
-        document.getElementById('modalOverlay').style.display = 'block';
-    }
-    window.openModal = openModal;
-    
-    function closeModal() {
-        document.getElementById('purchaseModal').style.display = 'none';
-        document.getElementById('modalOverlay').style.display = 'none';
-        document.getElementById('imageFile').value = '';
-        document.getElementById('txHash').value = '';
-        document.getElementById('fileLabel').innerHTML = '📸 Click to select your logo/image';
-        priceInput.value = 10;
-        currentPrice = 10;
-    }
-    window.closeModal = closeModal;
-    
-    function copyText(id) {
-        const text = document.getElementById(id).innerText;
-        navigator.clipboard.writeText(text);
-        alert("✅ Copied: " + text);
-    }
-    window.copyText = copyText;
-    
-    // ফাইল আপলোড
-    document.getElementById('fileLabel').onclick = () => document.getElementById('imageFile').click();
-    document.getElementById('imageFile').onchange = (e) => {
-        if(e.target.files.length) {
-            document.getElementById('fileLabel').innerHTML = `✅ ${e.target.files[0].name}`;
-        }
-    };
-    
-    // সাবমিট
-    document.getElementById('submitPayment').onclick = async () => {
-        const file = document.getElementById('imageFile').files[0];
-        const txid = document.getElementById('txHash').value.trim();
-        const btn = document.getElementById('submitPayment');
+        let currentZoom = 1;
+        const MIN_ZOOM = 0.3;
+        const MAX_ZOOM = 3;
         
-        if(!file) { alert("❌ Please select an image first"); return; }
-        if(!txid) { alert("❌ Enter TRC-20 Transaction Hash"); return; }
-        if(currentPrice < 10) { alert("❌ Minimum amount is 10 USDT"); return; }
-        if(currentPrice > 1000) { alert("❌ Maximum amount is 1000 USDT"); return; }
-        
-        btn.innerText = "🔍 Verifying on Tron...";
-        btn.disabled = true;
-        
-        try {
-            const verifyRes = await fetch("https://api.trongrid.io/wallet/gettransactionbyid", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ value: txid })
-            });
-            const txData = await verifyRes.json();
+        if(zoomContainer && gridWrapper) {
+            zoomContainer.addEventListener('wheel', function(e) {
+                if(e.ctrlKey) {
+                    e.preventDefault();
+                    const delta = e.deltaY > 0 ? -0.15 : 0.15;
+                    currentZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, currentZoom + delta));
+                    gridWrapper.style.transform = `translate3d(0,0,0) scale(${currentZoom})`;
+                }
+            }, { passive: false });
             
-            if(!txData || !txData.ret || txData.ret[0].contractRet !== "SUCCESS") 
-                throw new Error("Invalid or unpaid transaction");
+            let initialPinchDistance = 0;
+            let initialZoom = 1;
             
-            let receivedAmount = 0;
-            if(txData.raw_data && txData.raw_data.contract[0]) {
-                const contract = txData.raw_data.contract[0];
-                if(contract.type === "TriggerSmartContract") {
-                    const dataHex = contract.parameter.value.data;
-                    if(dataHex && dataHex.length >= 136) {
-                        const amountHex = dataHex.substring(72, 136);
-                        const rawAmount = parseInt(amountHex, 16);
-                        receivedAmount = rawAmount / 1000000;
+            zoomContainer.addEventListener('touchstart', function(e) {
+                if(e.touches.length >= 2) {
+                    isPinching = true; 
+                    initialPinchDistance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX, 
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    initialZoom = currentZoom;
+                }
+            }, { passive: true });
+            
+            zoomContainer.addEventListener('touchmove', function(e) {
+                if(e.touches.length >= 2 && initialPinchDistance > 0) {
+                    isPinching = true;
+                    const distance = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX, 
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    currentZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, initialZoom * (distance / initialPinchDistance)));
+                    gridWrapper.style.transform = `translate3d(0,0,0) scale(${currentZoom})`;
+                }
+            }, { passive: true });
+            
+            zoomContainer.addEventListener('touchend', function(e) {
+                if(e.touches.length === 0) {
+                    setTimeout(() => { isPinching = false; }, 100);
+                }
+            }, { passive: true });
+        }
+        
+        function selectRange(startIdx, endIdx) {
+            if (isPinching) return; 
+            
+            const startRow = Math.floor(startIdx / COLS), startCol = startIdx % COLS;
+            const endRow = Math.floor(endIdx / COLS), endCol = endIdx % COLS;
+            
+            const minRow = Math.min(startRow, endRow), maxRow = Math.max(startRow, endRow);
+            const minCol = Math.min(startCol, endCol), maxCol = Math.max(startCol, endCol);
+            
+            const newSelection = new Set();
+            for(let row = minRow; row <= maxRow; row++) {
+                for(let col = minCol; col <= maxCol; col++) {
+                    const idx = row * COLS + col;
+                    if(idx < TOTAL && (!blockData[idx + 1] || !blockData[idx + 1].imageUrl)) {
+                        newSelection.add(idx + 1);
                     }
                 }
             }
-            
-            if(receivedAmount !== currentPrice) {
-                throw new Error(`Amount mismatch! Sent ${receivedAmount} USDT, Required exactly ${currentPrice} USDT`);
-            }
-            
-            btn.innerText = "📤 Uploading image...";
-            const formData = new FormData();
-            formData.append("image", file);
-            const imgRes = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, { method: "POST", body: formData });
-            const imgJson = await imgRes.json();
-            
-            if(!imgJson.success) throw new Error("Image upload failed");
-            const finalImageUrl = imgJson.data.url;
-            
-            btn.innerText = "💾 Publishing...";
-            await db.ref('blocks/' + selectedBlockId).set({
-                imageUrl: finalImageUrl,
-                txId: txid,
-                price: currentPrice,
-                timestamp: Date.now()
+            selectedBlocks = newSelection;
+            updateSelectionUI();
+        }
+        
+        function updateSelectionUI() {
+            document.querySelectorAll('.pixel.selected').forEach(el => el.classList.remove('selected'));
+            selectedBlocks.forEach(blockId => {
+                const el = document.querySelector(`.pixel[data-id="${blockId}"]`);
+                if(el) el.classList.add('selected');
             });
             
-            alert(`🎉 SUCCESS! Block #${selectedBlockId} is now LIVE!\n💰 Amount: $${currentPrice} USDT`);
-            closeModal();
+            const count = selectedBlocks.size;
+            if(floatSelectedCountSpan) floatSelectedCountSpan.innerText = count;
+            if(modalTotalSpan) modalTotalSpan.innerText = count * currentPrice;
             
-        } catch(err) {
-            alert("❌ Failed: " + err.message);
-        } finally {
-            btn.innerText = "✅ VERIFY & PUBLISH";
-            btn.disabled = false;
+            if(buyFloatBtn) {
+                buyFloatBtn.style.display = count > 0 ? 'block' : 'none';
+                if(count > 0) buyFloatBtn.innerHTML = `💰 Buy ${count} Pixel${count > 1 ? 's' : ''} ($${count * currentPrice})`;
+            }
+            if(selectedBlocksListDiv) {
+                const blocksList = Array.from(selectedBlocks).slice(0, 10).join(', ');
+                selectedBlocksListDiv.innerHTML = `<strong>Selected:</strong> ${blocksList}${selectedBlocks.size > 10 ? '...' : ''} (${selectedBlocks.size} pix)`;
+            }
         }
-    };
-    
-    window.addEventListener('resize', () => renderVisible());
-    setTimeout(() => renderVisible(), 100);
+        
+        function renderGrid() {
+            if(!gridViewport) return;
+            gridViewport.innerHTML = '';
+            
+            const fragment = document.createDocumentFragment();
+            for(let i = 1; i <= TOTAL; i++) {
+                const data = blockData[i];
+                const isSold = data && data.imageUrl;
+                const div = document.createElement('div');
+                div.className = `pixel ${isSold ? 'sold' : ''}`;
+                div.setAttribute('data-id', i);
+                
+                if(isSold) {
+                    const img = document.createElement('img');
+                    img.src = data.imageUrl;
+                    img.loading = 'lazy';
+                    div.appendChild(img);
+                } else {
+                    div.addEventListener('mousedown', (e) => {
+                        if(e.button !== 0 || isPinching) return;
+                        mouseDown = true;
+                        selectionStartIndex = i - 1;
+                        selectRange(selectionStartIndex, selectionStartIndex);
+                    });
+                    div.addEventListener('mouseenter', () => {
+                        if(mouseDown && selectionStartIndex !== -1 && !isPinching) selectRange(selectionStartIndex, i - 1);
+                    });
+                }
+                fragment.appendChild(div);
+            }
+            gridViewport.appendChild(fragment);
+            updateSelectionUI();
+        }
+        
+        document.addEventListener('mouseup', () => { mouseDown = false; selectionStartIndex = -1; });
+        
+        if(gridViewport) {
+            let touchStartIndex = null;
+            gridViewport.addEventListener('touchstart', (e) => {
+                if (e.touches.length >= 2 || isPinching) { touchStartIndex = null; return; }
+                
+                const target = e.target.closest('.pixel');
+                if(target && !target.classList.contains('sold')) {
+                    touchStartIndex = parseInt(target.getAttribute('data-id')) - 1;
+                    selectRange(touchStartIndex, touchStartIndex);
+                }
+            }, { passive: true });
+            
+            gridViewport.addEventListener('touchmove', (e) => {
+                if(touchStartIndex === null || e.touches.length >= 2 || isPinching) return;
+                
+                const target = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY)?.closest('.pixel');
+                if(target && !target.classList.contains('sold')) {
+                    selectRange(touchStartIndex, parseInt(target.getAttribute('data-id')) - 1);
+                }
+            }, { passive: true });
+            
+            gridViewport.addEventListener('touchend', () => { touchStartIndex = null; });
+        }
+        
+        db.ref('blocks').once('value').then((snap) => {
+            blockData = snap.val() || {};
+            renderGrid();
+            if(soldCountSpan) soldCountSpan.innerText = Object.keys(blockData).filter(k => blockData[k].imageUrl).length;
+        });
+        
+        // --- FIXED REFERRAL & SHARE LINK ENGINE ---
+        const urlParams = new URLSearchParams(window.location.search);
+        if(urlParams.get('ref')) localStorage.setItem('referredBy', urlParams.get('ref'));
+        
+        function updateShareLink() {
+            let userId = localStorage.getItem('userId') || 'user_' + Math.random().toString(36).substr(2, 8);
+            localStorage.setItem('userId', userId);
+            
+            const finalShareLink = WEBSITE_URL + '?ref=' + userId;
+            if(document.getElementById('shareLink')) document.getElementById('shareLink').value = finalShareLink;
+            
+            const encodedUrl = encodeURIComponent(finalShareLink);
+            const shareText = encodeURIComponent('Own a piece of internet history on the 10 Million Dollar Pixel Grid! 🚀');
+            
+            if(document.getElementById('fbShareBtn')) document.getElementById('fbShareBtn').href = `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}`;
+            if(document.getElementById('waShareBtn')) document.getElementById('waShareBtn').href = `https://api.whatsapp.com/send?text=${shareText}%20${encodedUrl}`;
+            if(document.getElementById('twShareBtn')) document.getElementById('twShareBtn').href = `https://twitter.com/intent/tweet?text=${shareText}&url=${encodedUrl}`;
+        }
+        
+        window.copyShareLink = function() {
+            const linkInput = document.getElementById('shareLink');
+            if(linkInput) { 
+                linkInput.select(); 
+                linkInput.setSelectionRange(0, 99999);
+                navigator.clipboard.writeText(linkInput.value);
+                alert('✅ Referral Link Copied Successfully!'); 
+            }
+        }
+        
+        if(priceInput) {
+            priceInput.addEventListener('input', (e) => {
+                currentPrice = Math.max(10, Math.min(1000, parseInt(e.target.value) || 10));
+                if(modalTotalSpan) modalTotalSpan.innerText = selectedBlocks.size * currentPrice;
+            });
+        }
+        
+        window.openModal = function() {
+            if(!selectedBlocks.size) return;
+            if(modalTitle) modalTitle.innerHTML = `Buy ${selectedBlocks.size} Pixel${selectedBlocks.size > 1 ? 's' : ''}`;
+            document.getElementById('purchaseModal').style.display = 'block';
+            document.getElementById('modalOverlay').style.display = 'block';
+        }
+        
+        window.closeModal = function() {
+            document.getElementById('purchaseModal').style.display = 'none';
+            document.getElementById('modalOverlay').style.display = 'none';
+        }
+        
+        window.copyText = function(id) {
+            navigator.clipboard.writeText(document.getElementById(id).innerText);
+            alert("✅ Copied!");
+        }
+        
+        if(fileLabel && imageFile) {
+            fileLabel.onclick = () => imageFile.click();
+            imageFile.onchange = (e) => { if(e.target.files.length) fileLabel.innerHTML = `✅ ${e.target.files[0].name}`; }
+        }
+        
+        if(submitBtn) {
+            submitBtn.onclick = async () => {
+                const file = imageFile?.files[0];
+                const txid = document.getElementById('txHash')?.value.trim();
+                if(!selectedBlocks.size || !file || !txid) { alert("❌ Fill all fields."); return; }
+                
+                submitBtn.innerText = "⏳ Submitting...";
+                submitBtn.disabled = true;
+                
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async function () {
+                    try {
+                        await db.ref('orders').push({
+                            blocks: Array.from(selectedBlocks),
+                            txId: txid,
+                            pricePerPixel: currentPrice,
+                            totalPrice: selectedBlocks.size * currentPrice,
+                            referrer: localStorage.getItem('referredBy') || '',
+                            imageData: reader.result,
+                            timestamp: Date.now(),
+                            status: "pending"
+                        });
+                        alert("🎉 SUBMITTED FOR REVIEW! Pixels will be live after verification.");
+                        selectedBlocks.clear();
+                        updateSelectionUI();
+                        closeModal();
+                    } catch(e) { alert("❌ Error: " + e.message); }
+                    finally { submitBtn.innerText = "✅ SUBMIT FOR REVIEW"; submitBtn.disabled = false; }
+                };
+            }
+        }
+        
+        setTimeout(updateShareLink, 300);
+    })();
 </script>
 </body>
 </html>
